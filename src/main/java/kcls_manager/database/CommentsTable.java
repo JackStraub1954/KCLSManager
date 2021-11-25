@@ -12,9 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import kcls_manager.main.Author;
@@ -265,9 +265,9 @@ public class CommentsTable
      * 
      * @throws SQLException if a SQL exception occurs
      */
-    public Set<Comment> getAllComments() throws SQLException
+    public List<Comment> getAllComments() throws SQLException
     {
-        Set<Comment>   comments    = null;
+        List<Comment>  comments    = null;
         try ( ResultSet rSet    = getAllCommentsPStatement.executeQuery() )
         {
             comments = getComments( rSet );
@@ -296,7 +296,7 @@ public class CommentsTable
             throw new KCLSException( message );
         }
         int             ident       = optIdent.getAsInt();
-        Set<Comment>   comments    = getCommentsForTitle( ident );
+        List<Comment>   comments    = getCommentsForTitle( ident );
         title.setComments( comments );
     }
     
@@ -311,10 +311,10 @@ public class CommentsTable
      * 
      * @throws SQLException if a SQL error occurs
      */
-    private Set<Comment> getCommentsForTitle( int ident ) throws SQLException
+    private List<Comment> getCommentsForTitle( int ident ) throws SQLException
     {
         getTitleCommentsPStatement.setInt( 1, ident);
-        Set<Comment>   comments    = null;
+        List<Comment>  comments    = null;
         try ( ResultSet rSet = getTitleCommentsPStatement.executeQuery() )
         {
             comments = getComments( rSet );
@@ -343,7 +343,7 @@ public class CommentsTable
             throw new KCLSException( message );
         }
         int ident   = optIdent.getAsInt();
-        Set<Comment>   comments    = getCommentsForAuthor( ident );
+        List<Comment>  comments    = getCommentsForAuthor( ident );
         author.setComments( comments );
     }
     
@@ -360,8 +360,8 @@ public class CommentsTable
         int             itemID      = optIdent.getAsInt();
         int             itemType    = 
             item instanceof Title ? TITLE_TYPE : AUTHOR_TYPE;
-        Set<Comment>   current     = item.getComments();
-        Set<Comment>   committed   = getCommentsForItem( item, itemType );
+        List<Comment>   current     = item.getComments();
+        List<Comment>   committed   = getCommentsForItem( item, itemType );
         for ( Comment comment : committed )
             deleteCommentIf( current, comment );
         
@@ -393,7 +393,7 @@ public class CommentsTable
      * @throws KCLSException if the given comment does not have a row ID
      */
     private boolean 
-    deleteCommentIf( Set<Comment> comments, Comment comment )
+    deleteCommentIf( List<Comment> comments, Comment comment )
         throws SQLException, KCLSException
     {
         OptionalInt optIdent    = comment.getIdent();
@@ -434,11 +434,11 @@ public class CommentsTable
      * 
      * @throws SQLException if a SQL error occurs
      */
-    private Set<Comment> getCommentsForAuthor( int ident )
+    private List<Comment> getCommentsForAuthor( int ident )
         throws SQLException
     {
         getAuthorCommentsPStatement.setInt( 1, ident);
-        Set<Comment>   comments    = null;
+        List<Comment>  comments    = null;
         try ( ResultSet rSet = getAuthorCommentsPStatement.executeQuery() )
         {
             comments = getComments( rSet );
@@ -457,7 +457,7 @@ public class CommentsTable
      * @throws SQLException     if a SQL exception occurs
      * @throws KCLSException    if <em>item</em> does not have a row ID
      */
-    private Set<Comment> getCommentsForItem( LibraryItem item, int listType )
+    private List<Comment> getCommentsForItem( LibraryItem item, int listType )
         throws SQLException, KCLSException
     {
         OptionalInt optIdent    = item.getIdent();
@@ -471,7 +471,7 @@ public class CommentsTable
         int ident   = optIdent.getAsInt();
         getItemCommentsPStatement.setInt( 1, listType );
         getItemCommentsPStatement.setInt( 2, ident );
-        Set<Comment>   comments    = null;
+        List<Comment>   comments    = null;
         try ( ResultSet rSet = getItemCommentsPStatement.executeQuery() )
         {
             comments = getComments( rSet );
@@ -524,9 +524,9 @@ public class CommentsTable
      *          in the result set.
      * @throws SQLException if a SQL error occurs
      */
-    private Set<Comment> getComments( ResultSet rSet ) throws SQLException
+    private List<Comment> getComments( ResultSet rSet ) throws SQLException
     {
-        Set<Comment>   comments    = new HashSet<>();
+        List<Comment>   comments    = new ArrayList<>();
         while ( rSet.next() )
             comments.add( cvtRowToComment( rSet ) );
         return comments;

@@ -22,10 +22,31 @@ public class Constants
 
     /** 'Apply' button was selected */
     public static final int     APPLY           = 3;
+
+        /* ****************************************
+         * COMPONENT TEXT
+         */    
+    /** OK Button text */
+    public static final String  OK_TEXT         = "OK";
     
-            /* ****************************************
-             * ELEMENT TAG NAMES
-             */    
+    /** Cancel Button text */
+    public static final String  CANCEL_TEXT     = "Cancel";
+    
+    /** Save Button text */
+    public static final String  SAVE_TEXT       = "Save";
+    
+    /** Apply Button text */
+    public static final String  APPLY_TEXT      = "Apply";
+    
+    /** Delete Button text */
+    public static final String  DELETE_TEXT     = "Delete";
+    
+    /** Insert Button text */
+    public static final String  INSERT_TEXT     = "Insert";
+    
+        /* ****************************************
+         * ELEMENT TAG NAMES
+         */    
     /** The root element name */
     public static final String  DOC_ROOT        = "librarian";
     

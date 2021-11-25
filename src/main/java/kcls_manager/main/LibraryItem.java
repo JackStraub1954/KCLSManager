@@ -1,11 +1,12 @@
 package kcls_manager.main;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
-import java.util.Set;
 
 public abstract class LibraryItem
 {
@@ -21,7 +22,7 @@ public abstract class LibraryItem
     private int                 rating          = 0;
     private String              source          = "";
     private String              listName        = "";
-    private Set<Comment>        comments        = new HashSet<>();
+    private List<Comment>       comments        = new ArrayList<>();
     private LocalDate           creationDate    = LocalDate.now();
     private LocalDate           modifyDate      = LocalDate.now();
     
@@ -124,10 +125,10 @@ public abstract class LibraryItem
      * 
      * @return Unmodifiable list of all comments
      */
-    public Set<Comment> getComments()
+    public List<Comment> getComments()
     {
-        Set<Comment>    set    = new HashSet<>( comments );
-        return set;
+        List<Comment>   list   = Collections.unmodifiableList( comments );
+        return list;
     }
     
     /**
@@ -354,8 +355,8 @@ public abstract class LibraryItem
         if ( (rval = listName1.compareTo( listName2 )) != 0 )
             return rval;
         
-        Set<Comment>    comments1   = this.getComments();
-        Set<Comment>    comments2   = that.getComments();
+        List<Comment>   comments1   = this.getComments();
+        List<Comment>   comments2   = that.getComments();
         if ( (rval = Utils.compareTo( comments1, comments2 )) != 0 )
             return rval;
         

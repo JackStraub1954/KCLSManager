@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>kcls_manager</groupId>
+	<artifactId>kcls_manager</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0.0</version>
+	<name>KCLS Manager</name>
+	<url>http://maven.apache.org</url>
+    
+	<properties>
+       <developer>JesseJW</developer>
+       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+	<maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+    </properties>
+    
+    <repositories>
+        <repository>
+            <id>jstraub-repository</id>
+            <name>javaintro</name>
+            <url>https://faculty.washington.edu/jstraub/repository/</url>
+        </repository>
+    </repositories>
+    
+    <dependencies>
+<!-- trying to fix JUnit nosuchmethod error
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.0</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.0</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>uw.syp.java.javaintro</groupId>
+            <artifactId>javaintro</artifactId>
+            <version>00-01</version>
+        </dependency>  
+-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.derby/derby -->
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>10.15.2.0</version>
+			<scope>test</scope>
+		</dependency>
+    </dependencies>
+
+    <build>    
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/test/resources</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <arg>-Xlint:-serial</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>    
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.3.0</version>
+                <configuration>
+                    <finalName>${developer}-${project.version}</finalName>
+                    <formats>
+                        <format>tar.gz</format>
+                        <format>zip</format>
+                    </formats>
+                    <descriptorRefs>
+                        <descriptorRef>project</descriptorRef>
+                    </descriptorRefs>
+                    <tarLongFileMode>posix</tarLongFileMode>
+                </configuration>
+             </plugin>  
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+            </plugin>             
+        </plugins>
+    </build>
+</project>

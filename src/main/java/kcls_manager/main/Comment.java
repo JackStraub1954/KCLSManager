@@ -11,6 +11,10 @@ import static kcls_manager.main.Constants.TITLE_TYPE;
  * @author jstra
  *
  */
+/**
+ * @author jstra
+ *
+ */
 public class Comment implements Comparable<Comment>
 {
 //    private static final String loggerName  = Comment.class.getName();
@@ -47,6 +51,19 @@ public class Comment implements Comparable<Comment>
         setText( text );
         setIdent( OptionalInt.empty() );
         setItemID( OptionalInt.empty() );
+    }
+    
+    /**
+     * Copy constructor.
+     * 
+     * @param toCopy    Comment instance to copy.
+     */
+    public Comment( Comment toCopy )
+    {
+        setType( toCopy.getType() );
+        setText( toCopy.getText() );
+        setIdent( toCopy.getIdent() );
+        setItemID( toCopy.getItemID() );
     }
 
     /**

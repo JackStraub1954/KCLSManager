@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -345,9 +344,9 @@ public class DBServer
      * 
      * @throws KCLSException if an error occurs
      */
-    public Set<Comment> getAllComments() throws KCLSException
+    public List<Comment> getAllComments() throws KCLSException
     {
-        Set<Comment>   comments    = null;
+        List<Comment>  comments    = null;
         try
         {
             logger.info( "getting all comments " );
