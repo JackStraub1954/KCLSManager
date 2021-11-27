@@ -189,7 +189,7 @@ class CommentsTableTest
         }
         
         // verify data so far
-        Set<Comment>    actComments = dbServer.getAllComments();
+        List<Comment>   actComments = dbServer.getAllComments();
         assertTrue( Utils.equals( allComments, actComments ) );
         
         // Comments that don't go in the database at all
@@ -295,8 +295,8 @@ class CommentsTableTest
         dbServer.getCommentsFor( tempToDelete );
         dbServer.getCommentsFor( tempToKeep );
         
-        Set<Comment>    expComments = authorToDelete.getComments();
-        Set<Comment>    actComments = tempToDelete.getComments();
+        List<Comment>   expComments = authorToDelete.getComments();
+        List<Comment>   actComments = tempToDelete.getComments();
         assertTrue( Utils.equals( expComments, actComments ) );
         
         expComments = authorToKeep.getComments();
@@ -343,12 +343,12 @@ class CommentsTableTest
         {
             Title   newTitle    = new Title( title );
             dbServer.getCommentsFor( newTitle );
-            Set<Comment>    expComments = title.getComments();
-            Set<Comment>    actComments = newTitle.getComments();
+            List<Comment>   expComments = title.getComments();
+            List<Comment>   actComments = newTitle.getComments();
             assertTrue( Utils.equals( expComments, actComments ) );
         }
         
-        Set<Comment>    actComments     = dbServer.getAllComments();
+        List<Comment>   actComments     = dbServer.getAllComments();
         assertTrue( Utils.equals( allComments, actComments ) );
     }
     
@@ -380,7 +380,7 @@ class CommentsTableTest
         
         defAuthor.setComments( allComments );
         dbServer.insertCommentsFor( defAuthor );
-        Set<Comment>    actComments = dbServer.getAllComments();
+        List<Comment>   actComments = dbServer.getAllComments();
         assertTrue( Utils.equals( allComments, actComments ) );
         
         // on synch, these should be deleted from the database
@@ -448,7 +448,7 @@ class CommentsTableTest
         
         title.setComments( allComments );
         dbServer.insertCommentsFor( title );
-        Set<Comment>    actComments = dbServer.getAllComments();
+        List<Comment>   actComments = dbServer.getAllComments();
         assertTrue( Utils.equals( allComments, actComments ) );
         
         // on synch, these should be deleted from the database
@@ -516,7 +516,7 @@ class CommentsTableTest
             dbServer.insertTitle( title1 );
             titles.add( title1 );
             
-            Set<Comment>    expComments = title1.getComments();
+            List<Comment>   expComments = title1.getComments();
             OptionalInt     titleIdent  = title1.getIdent();
             assertEquals( expComments.size(), inx );
             assertTrue( titleIdent.isPresent() );
@@ -528,7 +528,7 @@ class CommentsTableTest
             
             Title   title2  = new Title( title1 );
             dbServer.getCommentsFor( title2 );
-            Set<Comment>    actComments = title2.getComments();
+            List<Comment>   actComments = title2.getComments();
             assertEquals( expComments, actComments );
         }
         
@@ -544,7 +544,7 @@ class CommentsTableTest
             dbServer.insertAuthor( author1 );
             authors.add( author1 );
             
-            Set<Comment>    expComments = author1.getComments();
+            List<Comment>   expComments = author1.getComments();
             OptionalInt     authorIdent = author1.getIdent();
             assertEquals( expComments.size(), inx );
             assertTrue( authorIdent.isPresent() );
@@ -556,7 +556,7 @@ class CommentsTableTest
             
             Author  author2  = new Author( author1 );
             dbServer.getCommentsFor( author2 );
-            Set<Comment>    actComments = author2.getComments();
+            List<Comment>   actComments = author2.getComments();
             assertEquals( expComments, actComments );
         }
         

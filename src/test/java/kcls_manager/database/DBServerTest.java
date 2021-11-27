@@ -290,7 +290,7 @@ class DBServerTest
             for ( Author author : allAuthors )
                 expComments.addAll( author.getComments() );
             
-            Set<Comment>    actComments = dbServer.getAllComments();
+            List<Comment>   actComments = dbServer.getAllComments();
             assertTrue( Utils.equals( expComments, actComments) );
         }
     }
@@ -328,7 +328,7 @@ class DBServerTest
             }
         );
         
-        Set<Comment>    actComments = dbServer.getAllComments();
+        List<Comment>   actComments = dbServer.getAllComments();
         assertTrue( Utils.equals( expComments, actComments ) );
     }
 
@@ -401,8 +401,8 @@ class DBServerTest
             actTitle.clearComments();
             dbServer.getCommentsFor( actTitle );
             
-            Set<Comment>    expComments = expTitle.getComments();
-            Set<Comment>    actComments = actTitle.getComments();
+            List<Comment>   expComments = expTitle.getComments();
+            List<Comment>   actComments = actTitle.getComments();
             assertCollectionsEqual( expComments, actComments );
         }
     }
@@ -729,8 +729,7 @@ class DBServerTest
         Title   title   = getUniqueTitle( 5, defAuthorName );
         dbServer.insertTitle( title );
         
-        Set<Comment>    setComments     = title.getComments();
-        List<Comment>   listComments    = new ArrayList<>( setComments );
+        List<Comment>   listComments    = title.getComments();
         listComments.remove( 0 );
         listComments.add( getUniqueComment( TITLE_TYPE) );
         

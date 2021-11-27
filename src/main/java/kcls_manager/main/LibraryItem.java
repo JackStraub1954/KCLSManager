@@ -3,7 +3,6 @@ package kcls_manager.main;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -127,7 +126,7 @@ public abstract class LibraryItem
      */
     public List<Comment> getComments()
     {
-        List<Comment>   list   = Collections.unmodifiableList( comments );
+        List<Comment>   list   = new ArrayList<>( comments );
         return list;
     }
     

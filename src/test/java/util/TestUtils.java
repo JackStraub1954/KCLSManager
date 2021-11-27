@@ -323,4 +323,40 @@ public class TestUtils
         }
         return comp;
     }
+    
+    /**
+     * Obtains a Swing component given an object and a predicate.
+     * 
+     * @param pred  the given predicate
+     * @param obj   the given object
+     * 
+     * @return the target component, or null if not found
+     */
+    public static Component 
+    getContainer( BiPredicate<Component,Object> pred, Object obj )
+    {
+        Component   comp    = null;
+        Window[]    frames  = Window.getWindows();
+        for ( int inx = 0 ; inx < frames.length && comp == null ; ++inx )
+        {
+            Window  frame   = frames[inx];
+            if ( !frame.isDisplayable() )
+                continue;
+            if ( pred.test( frame, obj ) )
+                comp = frame;
+            else if ( frame instanceof JFrame )
+            {
+                Container   cont    = ((JFrame)frame).getContentPane();
+                comp = getComponent( cont, pred, obj );
+            }
+            else if ( frame instanceof JDialog )
+            {
+                Container   cont    = ((JDialog)frame).getContentPane();
+                comp = getComponent( cont, pred, obj );
+            }
+            else
+                comp = getComponent( frame, pred, obj );
+        }
+        return comp;
+    }
 }

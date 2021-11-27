@@ -503,6 +503,7 @@ public class CommentEditor extends JDialog
         @Override
         public void windowClosing( WindowEvent evt )
         {
+            System.out.println( "window closing" );
             final String    save        = "Save";
             final String    discard     = "Discard";
             final String    cancel      = "Cancel";

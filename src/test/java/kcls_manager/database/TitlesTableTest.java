@@ -154,8 +154,8 @@ class TitlesTableTest
         {
             Title   temp    = new Title( title );
             dbServer.getCommentsFor( temp );
-            Set<Comment>    actComments = temp.getComments();
-            Set<Comment>    expComments = title.getComments();
+            List<Comment>   actComments = temp.getComments();
+            List<Comment>   expComments = title.getComments();
 //            printByComment( expComments, actComments );
             assertTrue( Utils.equals( expComments, actComments ) );
             
@@ -168,8 +168,8 @@ class TitlesTableTest
         {
             Title   temp    = new Title( title );
             dbServer.getCommentsFor( temp );
-            Set<Comment>    actComments = temp.getComments();
-            Set<Comment>    expComments = title.getComments();
+            List<Comment>   actComments = temp.getComments();
+            List<Comment>   expComments = title.getComments();
             printByComment( expComments, actComments );
             assertTrue( Utils.equals( expComments, actComments ) );
         }
@@ -230,7 +230,7 @@ class TitlesTableTest
             Title   test    = dbServer.getTitle( ident );
             assertNull( test );
             
-            Set<Comment>  comments = title.getComments();
+            List<Comment>   comments = title.getComments();
             for ( Comment comment : comments )
             {
                 Comment tempComment = 

@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.OptionalInt;
-import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -421,8 +421,8 @@ class AuthorTest
         int             expRating   = defAuthor.getRating();
         String          expSource   = defAuthor.getSource();
         String          expListName = defAuthor.getListName();
-        Set<Comment>    setComments = defAuthor.getComments();
-        String          expComments = setComments.toString();
+        List<Comment>   comments    = defAuthor.getComments();
+        String          expComments = comments.toString();
         LocalDate       expCreDate  = defAuthor.getCreationDate();
         LocalDate       expModDate  = defAuthor.getModifyDate();
         

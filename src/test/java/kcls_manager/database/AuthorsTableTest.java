@@ -136,7 +136,7 @@ class AuthorsTableTest
         LocalDate   creDate     = defCreationDate.plusDays( 10 );
         LocalDate   modDate     = defModifyDate.plusDays( 10 );
         
-        Set<Comment>   comments    = defAuthor.getComments();
+        List<Comment>   comments    = defAuthor.getComments();
         comments.remove( comments.size() / 2 );
         comments.remove( comments.size() / 2 );
           
@@ -153,8 +153,8 @@ class AuthorsTableTest
         defAuthor.setComments( comments );
         dbServer.updateAuthor( defAuthor );
         
-        Set<Comment>   actComments = dbServer.getAllComments();
-        Set<Comment>    expComments = defAuthor.getComments();
+        List<Comment>   actComments = dbServer.getAllComments();
+        List<Comment>   expComments = defAuthor.getComments();
         assertEquals( expComments, actComments );
     }
 

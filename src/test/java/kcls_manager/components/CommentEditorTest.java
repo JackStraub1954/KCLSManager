@@ -8,6 +8,7 @@ import static kcls_manager.main.Constants.OKAY;
 import static kcls_manager.main.Constants.OK_TEXT;
 import static kcls_manager.main.Constants.TITLE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,6 +18,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -138,10 +140,7 @@ class CommentEditorTest
             String  text    = String.format( fmt, inx );
             Comment comment = new Comment( TITLE_TYPE, text );
             comments.add( comment );
-            
-            clickButton( insertButton );
-            assertTrue( jTextArea.hasFocus() );
-            sendKeys( text );
+            insertComment( text );
         }
         clickButton( okButton );
         assertEquals( dialogStatus, OKAY );
@@ -162,10 +161,7 @@ class CommentEditorTest
             String  text    = String.format( fmt, inx );
             Comment comment = new Comment( AUTHOR_TYPE, text );
             comments.add( comment );
-            
-            clickButton( insertButton );
-            assertTrue( jTextArea.hasFocus() );
-            sendKeys( text );
+            insertComment( text );
         }
         clickButton( okButton );
         assertEquals( dialogStatus, OKAY );
@@ -233,10 +229,37 @@ class CommentEditorTest
         
         // Verify original comments not changed
         TestUtils.assertCommentsEqual( copies, author.getComments() );
-//        clickButton( cancelButton );
-//        assertEquals( dialogStatus, OKAY );
-//        List<Comment>   actualComments  = commentEditor.getComments();
-//        TestUtils.assertCommentsEqual( comments, actualComments );
+        for ( int inx = 0 ; inx < 2 ; ++inx )
+        {
+            String  text    = "new comment " + inx;
+            Comment comment = new Comment( AUTHOR_TYPE, text );
+            synch.add( comment );
+            insertComment( text );
+        }
+        
+        clickButton( okButton );
+        assertEquals( dialogStatus, OKAY );
+        List<Comment>   actualComments  = commentEditor.getComments();
+        TestUtils.assertCommentsEqual( synch, actualComments );
+    }
+    
+    @Test
+    public void testClose()
+    {
+        int     commentCount    = 5;
+        int     rowNum          = commentCount / 2 ;
+        
+        // Sanity check: rowNum intended  to be:
+        // 0 < rowNum < commentCount
+        assertTrue( rowNum > 0 );
+        
+        Author  author  = authorFactory.getUniqueAuthor( 5 );
+        runDialog( author );
+        appendToCommentAt( rowNum, " suffix" );
+        WindowEvent event   = 
+            new WindowEvent( commentEditor, WindowEvent.WINDOW_CLOSING );
+        commentEditor.dispatchEvent( event );
+        TestUtils.pause( 10000 );
     }
 
     @Test
@@ -251,12 +274,65 @@ class CommentEditorTest
         fail("Not yet implemented");
     }
     
-    public void runDialog( LibraryItem item )
+    private void runDialog( LibraryItem item )
     {
         DialogRunner    runner  = new DialogRunner( item );
         Thread          thread  = new Thread( runner, "Dialog Runner" );
         thread.start();
         TestUtils.pause( 100 );
+    }
+    
+    private void selectQuestionDialogButton( String buttonText )
+    {
+//        Component   comp    = TestUtils.
+    }
+    
+    /**
+     * Insert a comment and validate the result.
+     * 
+     * First poke the insert button; validate:
+     * <ol>
+     * <li>A new row appears at the top of the table.</li>
+     * <li>The new row is selected.</li>
+     * <li>The text of the new row is empty.</li>
+     * <li>The text area is enabled.</li>
+     * <li>The text area is empty.</li>
+     * <li>The text area has focus.</li>
+     * </ol>
+     * 
+     * Enter the given text; validate:
+     * <ol>
+     * <li>Text is correctly inserted in text area.</li>
+     * <li>Text is reflected in the first row of the table.</li>
+     * <li>Delete button is enabled.</li>
+     * </ol>
+     * 
+     * @param text  the given text
+     */
+    private void insertComment( String text )
+    {
+        int     startRowCount   = jTable.getRowCount();
+        int     expRowCount     = startRowCount + 1;
+        
+        clickButton( insertButton );
+        int     actRowCount     = jTable.getRowCount();
+        assertEquals( expRowCount, actRowCount );
+        
+        int     selectedRow     = jTable.getSelectedRow();
+        assertEquals( 0, selectedRow );
+        
+        String  rowText         = (String)tableModel.getValueAt( 0, 0 );
+        assertTrue( rowText.isEmpty() );
+        
+        String  areaText        = jTextArea.getText();
+        assertTrue( areaText.isEmpty() );
+        assertTrue( jTextArea.isEnabled() );
+        assertTrue( jTextArea.hasFocus() );
+        assertTrue( deleteButton.isEnabled() );
+        
+        sendKeys( text );
+        assertEquals( text, jTextArea.getText() );
+        assertEquals( text, tableModel.getValueAt( 0, 0 ) );
     }
     
     /**
@@ -286,6 +362,58 @@ class CommentEditorTest
         assertEquals( areaText, jTextArea.getText() );
         rowText = tableModel.getValueAt( row, 0 );
         assertEquals( areaText, rowText );
+    }
+    
+    /**
+     * Select a given row in the table of comments.
+     * Validate the resulting state:
+     * 
+     * <ol>
+     * <li>The text of the comment is copied to the text area.</li>
+     * <li>The text area is enabled.</li>
+     * <li>The delete button is enabled.</li>
+     * </ol>
+     * 
+     * @param row   the given row
+     */
+    private void selectCommentAt( int row )
+    {
+        selectionModel.setSelectionInterval( row, row );
+        Object  expString   = jTable.getValueAt( row, 0 );
+        String  actString   = jTextArea.getText();
+        assertEquals( expString, actString );
+        assertTrue( jTextArea.isEnabled() );
+        assertTrue( deleteButton.isEnabled() );
+    }
+    
+    /**
+     * Delete a given row from the table.
+     * Validate the result:
+     * <ol>
+     * <li>Table is shorter by one.</li>
+     * <li>No rows in the table are selected.</li>
+     * <li>JTextArea is empty.</li>
+     * <li>JTextArea is disabled."</li>
+     * <li>Delete button is disabled.</li>
+     * </ol>
+     * 
+     * @param row   the given row
+     */
+    private  void deleteCommentAt( int row )
+    {
+        int     startSize   = tableModel.getRowCount();
+        int     expSize     = startSize - 1;
+        
+        selectionModel.removeIndexInterval( row, row );
+        int     actSize     = tableModel.getRowCount();
+        assertEquals( expSize, actSize );
+        
+        int     selected    = jTable.getSelectedRow();
+        assertTrue( selected < 0 );
+        
+        assertTrue( jTextArea.getText().isEmpty() );
+        assertFalse( jTextArea.isEnabled() );
+        assertFalse( deleteButton.isEnabled() );
     }
     
     /**

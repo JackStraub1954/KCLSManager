@@ -1,19 +1,16 @@
 package kcls_manager.main;
 
+import static kcls_manager.main.Constants.TITLE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static kcls_manager.main.Constants.TITLE_TYPE;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,7 +28,7 @@ class LibraryItemTest
     private static final String         defSource       = "Default Source";
     private static final String         defListName     = 
         "Default List Name";
-    private static final Set<Comment>   defComments     = new HashSet<>();
+    private static final List<Comment>  defComments     = new ArrayList<>();
     private static final LocalDate      defCreationDate;
     private static final LocalDate      defModifyDate;
     private static final OptionalInt    emptyOption     = OptionalInt.empty();
@@ -76,7 +73,7 @@ class LibraryItemTest
         assertEquals( defRating, defTester.getRating() );
         assertEquals( defSource, defTester.getSource() );
         assertEquals( defListName, defTester.getListName() );
-        assertEquals( defComments, defTester.getComments() );
+        TestUtils.assertCommentsEqual( defComments, defTester.getComments() );
         assertEquals( defCreationDate, defTester.getCreationDate() );
         assertEquals( defModifyDate, defTester.getModifyDate() );
     }
@@ -90,7 +87,7 @@ class LibraryItemTest
         assertEquals( defRating, defTester.getRating() );
         assertEquals( defSource, defTester.getSource() );
         assertEquals( defListName, defTester.getListName() );
-        assertEquals( defComments, defTester.getComments() );
+        TestUtils.assertCommentsEqual( defComments, defTester.getComments() );
         assertEquals( defCreationDate, defTester.getCreationDate() );
         assertEquals( defModifyDate, defTester.getModifyDate() );
     }
@@ -142,7 +139,7 @@ class LibraryItemTest
         assertEquals( defRating, defTester.getRating() );
         assertEquals( defSource, defTester.getSource() );
         assertEquals( defListName, defTester.getListName() );
-        assertEquals( defComments, defTester.getComments() );
+        TestUtils.assertCommentsEqual( defComments, defTester.getComments() );
         assertEquals( defCreationDate, defTester.getCreationDate() );
         assertEquals( defModifyDate, defTester.getModifyDate() );
     }
@@ -173,16 +170,16 @@ class LibraryItemTest
     {
         assertTrue( defTester.getComments().isEmpty() );
         
-        Set<Comment>    expComments = new HashSet<>();
+        List<Comment>    expComments = new ArrayList<>();
         for ( int inx = 0 ; inx < 10 ; ++inx )
         {
             Comment nextComment = 
                 commentFactory.getUniqueComment( emptyOption );
             defTester.addComment( nextComment );
-            Set<Comment>    actComments = defTester.getComments();
+            List<Comment>   actComments = defTester.getComments();
             assertNotEquals( expComments, actComments );
             expComments.add(nextComment);
-            assertEquals( expComments, actComments );
+            TestUtils.assertCommentsEqual( expComments, actComments );
         }
     }
     
@@ -204,14 +201,14 @@ class LibraryItemTest
     {
         assertTrue( defTester.getComments().isEmpty() );
         
-        Set<Comment>    expComments = new HashSet<>();
+        List<Comment>   expComments = new ArrayList<>();
         for ( int inx = 0 ; inx < 10 ; ++inx )
         {
             expComments.add( commentFactory.getUniqueComment( emptyOption ) );
             defTester.setComments( expComments );
-            Set<Comment>    actComments = defTester.getComments();
+            List<Comment>   actComments = defTester.getComments();
             assertFalse( expComments == actComments );
-            assertEquals( expComments, actComments );
+            TestUtils.assertCommentsEqual( expComments, actComments );
         }
     }
 
@@ -463,13 +460,13 @@ class LibraryItemTest
     public void testRemoveComment()
     {
         int             testCount       = 10;
-        Set<Comment>    commentTracker  = new HashSet<>();
+        List<Comment>   commentTracker  = new ArrayList<>();
         for ( int inx = 0 ; inx < testCount ; ++inx )
         {
             Comment comment = commentFactory.getUniqueComment( inx );
             commentTracker.add( comment );
             defTester.addComment( comment );
-            assertEquals( commentTracker, defTester.getComments() );
+            TestUtils.assertCommentsEqual( commentTracker, defTester.getComments() );
         }
         
         for ( Comment comment : commentTracker )
@@ -490,11 +487,11 @@ class LibraryItemTest
     @Test
     public void testCommentSetEquality()
     {
-        Set<Comment>    expSet  = new HashSet<>();
-        Set<Comment>    actSet  = defTester.getComments();
+        List<Comment>   expSet  = new ArrayList<>();
+        List<Comment>   actSet  = defTester.getComments();
         List<Comment>   temp    = new ArrayList<>();
         
-        assertEquals( expSet, actSet );
+        TestUtils.assertCommentsEqual( expSet, actSet );
         for ( int inx = 0 ; inx < 10 ; ++inx )
         {
             Comment comment = commentFactory.getUniqueComment( emptyOption );
