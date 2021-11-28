@@ -1,6 +1,6 @@
 package kcls_manager.components;
 
-import static kcls_manager.main.Constants.AUTHOR_TYPE;
+import static kcls_manager.main.Constants.*;
 import static kcls_manager.main.Constants.CANCEL_TEXT;
 import static kcls_manager.main.Constants.DELETE_TEXT;
 import static kcls_manager.main.Constants.INSERT_TEXT;
@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Robot;
@@ -27,6 +28,7 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
@@ -52,6 +54,13 @@ class CommentEditorTest
         CommentEditorTest.class.getName();
     private static final Logger logger      = Logger.getLogger( loggerName );
     
+    /**  MSecs to wait after starting comment editor. */
+    private static final int    runDialogDelay      = 100;
+    /** MSecs to wait after clicking a button. */
+    private final int           clickButtonDelay    = 50;
+    /** MSecs to wait after dispatching an event. */
+    private static final int    dispatchEventDelay  = 100;
+    
     private JTextArea           jTextArea;
     private JTable              jTable;
     private TableModel          tableModel;
@@ -66,7 +75,6 @@ class CommentEditorTest
     private AuthorFactory       authorFactory;
     private CommentFactory      commentFactory;
     private Robot               robot;
-    private final int           clickButtonDelay    = 50;
     
     private static final CommentEditor commentEditor    = new CommentEditor( null );
     
@@ -238,40 +246,162 @@ class CommentEditorTest
         }
         
         clickButton( okButton );
-        assertEquals( dialogStatus, OKAY );
+        assertEquals( OKAY, dialogStatus );
         List<Comment>   actualComments  = commentEditor.getComments();
         TestUtils.assertCommentsEqual( synch, actualComments );
     }
     
+    /**
+     * Verify that, after being closed, the comment editor's
+     * getSelection method
+     * returns the correct status.
+     */
     @Test
-    public void testClose()
+    public void testGetSelection()
+    {
+        Title   title   = titleFactory.getUniqueTitle( 0 );
+        runDialog( title );
+        clickButton( okButton );
+        assertEquals( OKAY, dialogStatus );
+        assertEquals( OKAY, commentEditor.getSelection() );
+        
+        runDialog( title );
+        clickButton( cancelButton );
+        assertEquals( CANCEL, dialogStatus );
+        assertEquals( CANCEL, commentEditor.getSelection() );
+    }
+    
+    /**
+     * Click the comment editor's save button, prompting
+     * a JOptionPane question dialog to be displayed.
+     * Verify that clicking the save button in the JOptionPane
+     * translates into clicking the OK button for the comment editor.
+     */
+    @Test
+    public void testCloseSave()
+    {
+        testClose( SAVE_TEXT );
+        assertEquals( OKAY, dialogStatus );
+    }
+    
+    /**
+     * Click the comment editor's close button, prompting
+     * a JOptionPane question dialog to be displayed.
+     * Verify that clicking the discard button in the JOptionPane
+     * translates into clicking the cancel button for the comment editor.
+     */
+    @Test
+    public void testCloseDiscard()
+    {
+        testClose( DISCARD_TEXT );
+        assertEquals( CANCEL, dialogStatus );
+    }
+    
+    /**
+     * Click the comment editor's close button, prompting
+     * a JOptionPane question dialog to be displayed.
+     * Verify that clicking the cancel button in the JOptionPane
+     * does stops the comment editor from being closed.
+     */
+    @Test
+    public void testCloseCancel()
+    {
+        int unexpectedStatus    = -1;
+        dialogStatus = unexpectedStatus;
+        testClose( CANCEL_TEXT );
+        assertEquals( unexpectedStatus, dialogStatus );
+        assertTrue( commentEditor.isVisible() );
+    }
+    
+    /**
+     * Executes most of the logic to test what happens when a user
+     * selects the comment editor's close button.
+     * What should happen is that the comment editor displays
+     * a JOptionPane containing the choices save, discard or cancel.
+     * 
+     * <ol>
+     * <li>Start the comment editor.</li>
+     * <li>Make a modification to a comment in the editor.</li>
+     * <li>Dispatch an event to select the editor's close button.</li>
+     * <li>Click the indicated button in the JOptionPane.<li>
+     * </ol>
+     * 
+     * @param buttonText    the text of the button in the JOptionPane to click.
+     * 
+     * @return  a list of comments that should be returned
+     *          by commentEditor.getComments().
+     */
+    private void testClose( String buttonText )
     {
         int     commentCount    = 5;
         int     rowNum          = commentCount / 2 ;
+
+        // Appended to existing comment to modify the content
+        // of the dialog editor.
+        final String    suffix  = " suffix";
         
-        // Sanity check: rowNum intended  to be:
-        // 0 < rowNum < commentCount
-        assertTrue( rowNum > 0 );
+        // Used later to find original the comment that will be updated
+        // as part of this test.
+        Object  origText        = null;
         
-        Author  author  = authorFactory.getUniqueAuthor( 5 );
+        // Sanity check: rowNum intended to be after the first row
+        // and before the last row.
+        assertTrue( rowNum > 0 && rowNum < commentCount - 1 );
+        
+        Author  author  = authorFactory.getUniqueAuthor( commentCount );
+        
+        // Keep copies of the original comments for later validation
+        List<Comment>   exp     = new ArrayList<>();
+        for ( Comment comment : author.getComments() )
+            exp.add( new Comment( comment ) );
         runDialog( author );
-        appendToCommentAt( rowNum, " suffix" );
+        
+        // Modify a comment in the comment editor;
+        // keep track of the original text of the comment.
+        origText = tableModel.getValueAt( rowNum, 0 );
+        appendToCommentAt( rowNum, suffix );
+        
+        // Simulate poking of editor's close button.
         WindowEvent event   = 
             new WindowEvent( commentEditor, WindowEvent.WINDOW_CLOSING );
-        commentEditor.dispatchEvent( event );
-        TestUtils.pause( 10000 );
-    }
-
-    @Test
-    void testGetComments()
-    {
-        fail("Not yet implemented");
-    }
-
-    @Test
-    void testGetSelection()
-    {
-        fail("Not yet implemented");
+        dispatchEvent( commentEditor, event );
+        
+        // Find the question dialog that should now be displayed.
+        BiPredicate<Component,Object>   findDialogPred   =
+            (c,o) -> c instanceof JOptionPane;
+        JOptionPane optionPane  = 
+            (JOptionPane)TestUtils.getComponent( findDialogPred, null );
+        assertNotNull( optionPane );
+        
+        // Bit of logic to shorten the subsequent couple of lines of code
+        BiPredicate<Component,Object>   textFinder  = TestUtils.textFinder;
+        
+        // Find the button in the question dialog that should be clicked
+        AbstractButton  targetButton    = (AbstractButton)
+            TestUtils.getComponent( optionPane, textFinder, buttonText );
+        clickButton( targetButton );
+        
+        // verify that the original comments have NOT been changed (yet)
+        TestUtils.assertCommentsEqual( exp, author.getComments() );
+        
+        // Synchronize the copy of the original comments with the 
+        // changes made in the comment editor.
+        Comment toSynch = null;
+        for ( Comment comment : exp )
+        {
+            if ( origText.equals( comment.getText() ) )
+            {
+                toSynch = comment;
+                break;
+            }
+        }
+        assertNotNull( toSynch );
+        toSynch.setText( origText + suffix );
+        
+        // Whatever button was used to dismiss the question dialog,
+        // the comments returned by commentEditor.getComments()
+        // should reflect the change that was made, above.
+        TestUtils.assertCommentsEqual( exp, commentEditor.getComments() );
     }
     
     private void runDialog( LibraryItem item )
@@ -279,12 +409,23 @@ class CommentEditorTest
         DialogRunner    runner  = new DialogRunner( item );
         Thread          thread  = new Thread( runner, "Dialog Runner" );
         thread.start();
-        TestUtils.pause( 100 );
+        TestUtils.pause( runDialogDelay );
     }
     
-    private void selectQuestionDialogButton( String buttonText )
+    /**
+     * Start a new thread to dispatch an event.
+     * Pause for a designated amount of time to give the event
+     * a chance to be delivered.
+     * 
+     * @param comp      component to which an event is to be dispatches
+     * @param event     event to be dispatched
+     */
+    private void dispatchEvent( Component comp, AWTEvent event )
     {
-//        Component   comp    = TestUtils.
+        Thread  thread  = 
+            new Thread( () -> comp.dispatchEvent( event ), "Dispatch Event" );
+        thread.start();
+        TestUtils.pause( dispatchEventDelay ); 
     }
     
     /**

@@ -2,7 +2,10 @@ package kcls_manager.components;
 
 import static kcls_manager.main.Constants.AUTHOR_TYPE;
 import static kcls_manager.main.Constants.CANCEL;
+import static kcls_manager.main.Constants.CANCEL_TEXT;
+import static kcls_manager.main.Constants.DISCARD_TEXT;
 import static kcls_manager.main.Constants.OKAY;
+import static kcls_manager.main.Constants.SAVE_TEXT;
 import static kcls_manager.main.Constants.TITLE_TYPE;
 
 import java.awt.BorderLayout;
@@ -11,14 +14,12 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -30,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
@@ -141,12 +141,6 @@ public class CommentEditor extends JDialog
         // resulting in "do you want to save..." logic
         Document    document    = textArea.getDocument();
         document.addDocumentListener( new TextAreaListener() );
-        
-        // Add save shortcut (^s) to text area.
-        KeyStroke   saveKey     = KeyStroke.getKeyStroke( "control S" );
-        String      saveName    = "save";
-        textArea.getInputMap().put( saveKey, saveName );
-        textArea.getActionMap().put( saveName, new SaveAction() );
 
         pane.add( textArea, BorderLayout.NORTH );
         pane.add( new MainPanel(), BorderLayout.CENTER );
@@ -250,15 +244,6 @@ public class CommentEditor extends JDialog
         this.modified = modified;
     }
     
-    private void saveText()
-    {
-        if ( selectedRow >= 0 )
-        {
-            String  text    = textArea.getText();
-            tableModel.setValueAt( text, selectedRow, textColumn );
-        }
-    }
-    
     /**
      * Upon OK selection, the comments list must be made 
      * equivalent to the contents of the JTable.
@@ -274,7 +259,7 @@ public class CommentEditor extends JDialog
         }
         
         selection = OKAY;
-        setVisible( false );
+        showDialog( false, null );
     }
     
     /**
@@ -284,7 +269,7 @@ public class CommentEditor extends JDialog
     private void selectCancel()
     {
         selection = CANCEL;
-        setVisible( false );
+        showDialog( false, null );
     }
     
     /*
@@ -452,7 +437,7 @@ public class CommentEditor extends JDialog
         @Override
         public void changedUpdate(DocumentEvent e)
         {
-            update();
+            // this event is never fired by this dialog
         }
         
         /**
@@ -474,24 +459,6 @@ public class CommentEditor extends JDialog
     }
     
     /**
-     * Defines an action to be performed when an accelerator for 
-     * "save" is typed in the text area.
-     * 
-     * @author jstra
-     */
-    private class SaveAction extends AbstractAction
-    {
-        /** Default serial version UID */
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void actionPerformed( ActionEvent evt )
-        {
-            saveText();
-        }
-    }
-    
-    /**
      * Defines the behavior when the operator closes the dialog
      * (via the dialog close button or keyboard shortcut).
      * Gives the operator the chance to save changes before exiting.
@@ -504,9 +471,9 @@ public class CommentEditor extends JDialog
         public void windowClosing( WindowEvent evt )
         {
             System.out.println( "window closing" );
-            final String    save        = "Save";
-            final String    discard     = "Discard";
-            final String    cancel      = "Cancel";
+            final String    save        = SAVE_TEXT;
+            final String    discard     = DISCARD_TEXT;
+            final String    cancel      = CANCEL_TEXT;
             
             final String    message     = "Do you want to save your changes?";
             final String    title       = "Save or Discard Changes";

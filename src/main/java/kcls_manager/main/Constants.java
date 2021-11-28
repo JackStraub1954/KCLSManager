@@ -44,6 +44,9 @@ public class Constants
     /** Insert Button text */
     public static final String  INSERT_TEXT     = "Insert";
     
+    /** Discard button text */
+    public static final String  DISCARD_TEXT    = "Discard";
+    
         /* ****************************************
          * ELEMENT TAG NAMES
          */    
