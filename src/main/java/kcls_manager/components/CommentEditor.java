@@ -55,6 +55,9 @@ import kcls_manager.main.Title;
  */
 public class CommentEditor extends JDialog
 {
+    /** Generated serial version UID */
+    private static final long serialVersionUID = -2022075362458625900L;
+    
     private static final String loggerName  = CommentEditor.class.getName();
     private static final Logger logger      = Logger.getLogger( loggerName );
     
@@ -297,6 +300,8 @@ public class CommentEditor extends JDialog
         boolean enabled     = selectedRow < 0 ? false : true;
         delete.setEnabled( enabled );
         textArea.setEnabled( enabled );
+        if ( !enabled )
+            textArea.setText( "" );
     }
     
     /**
@@ -328,6 +333,8 @@ public class CommentEditor extends JDialog
         if ( !evt.getValueIsAdjusting() )
         {
             selectedRow = table.getSelectedRow();
+//            if ( selectedRow >= tableModel.getRowCount() )
+//                selectedRow = -1;
             if ( selectedRow >= 0 )
             {
                 String  text    = 
@@ -496,7 +503,9 @@ public class CommentEditor extends JDialog
                     initialVal
                 );
                 
-                switch ( options[option] )
+                String  selection   = option >= 0 ? options[option] : "";
+                
+                switch ( selection )
                 {
                 case save:
                     selectOK();

@@ -1,38 +1,44 @@
 package kcls_manager.components;
 
-import static kcls_manager.main.Constants.*;
+import static kcls_manager.main.Constants.AUTHOR_TYPE;
+import static kcls_manager.main.Constants.CANCEL;
 import static kcls_manager.main.Constants.CANCEL_TEXT;
 import static kcls_manager.main.Constants.DELETE_TEXT;
+import static kcls_manager.main.Constants.DISCARD_TEXT;
 import static kcls_manager.main.Constants.INSERT_TEXT;
 import static kcls_manager.main.Constants.OKAY;
 import static kcls_manager.main.Constants.OK_TEXT;
+import static kcls_manager.main.Constants.SAVE_TEXT;
 import static kcls_manager.main.Constants.TITLE_TYPE;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.function.BiPredicate;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.TableModel;
+import javax.swing.table.DefaultTableModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,9 +56,9 @@ import util.TitleFactory;
 
 class CommentEditorTest
 {
-    private static final String loggerName  = 
-        CommentEditorTest.class.getName();
-    private static final Logger logger      = Logger.getLogger( loggerName );
+//    private static final String loggerName  = 
+//        CommentEditorTest.class.getName();
+//    private static final Logger logger      = Logger.getLogger( loggerName );
     
     /**  MSecs to wait after starting comment editor. */
     private static final int    runDialogDelay      = 100;
@@ -63,7 +69,7 @@ class CommentEditorTest
     
     private JTextArea           jTextArea;
     private JTable              jTable;
-    private TableModel          tableModel;
+    private DefaultTableModel   tableModel;
     private ListSelectionModel  selectionModel;
     private JButton             deleteButton;
     private JButton             insertButton;
@@ -88,6 +94,7 @@ class CommentEditorTest
     {
         titleFactory = new TitleFactory();
         authorFactory = new AuthorFactory();
+        commentFactory = new CommentFactory();
         robot = new Robot();
         robot.setAutoDelay( 10 );
         
@@ -103,7 +110,7 @@ class CommentEditorTest
         jTable = (JTable)
             TestUtils.getComponent( pane, byType, JTable.class );
         assertNotNull( jTable );
-        tableModel = jTable.getModel();
+        tableModel = (DefaultTableModel) jTable.getModel();
         selectionModel = jTable.getSelectionModel();
         
         deleteButton = (JButton)
@@ -159,18 +166,15 @@ class CommentEditorTest
     @Test
     void testShowDialogBooleanAuthor()
     {
-        Author          author      = authorFactory.getUniqueAuthor( 0 );
-        String          fmt         = "%03d this is an author comment";
-        List<Comment>   comments    = new ArrayList<>();
+        Author          author          = authorFactory.getUniqueAuthor( 0 );
+        int             commentCount    = 5;
+        List<Comment>   comments        = 
+            getSequentialComments( AUTHOR_TYPE, commentCount );
         
         runDialog( author );
-        for ( int inx = 0 ; inx < 5 ; ++inx )
-        {
-            String  text    = String.format( fmt, inx );
-            Comment comment = new Comment( AUTHOR_TYPE, text );
-            comments.add( comment );
-            insertComment( text );
-        }
+        for ( Comment comment : comments )
+            insertComment( comment.getText() );
+        
         clickButton( okButton );
         assertEquals( dialogStatus, OKAY );
         List<Comment>   actualComments  = commentEditor.getComments();
@@ -224,6 +228,7 @@ class CommentEditorTest
         String  suffix  = " modified";
         for ( int row : new int[] { first, last } )
         {
+            System.out.println( "appending to " + row );
             appendToCommentAt( row, suffix );
             
             // reflect change in synchronized list
@@ -298,10 +303,96 @@ class CommentEditorTest
     }
     
     /**
+     * Verify: if no changes have been made to the comment editor, and
+     * the comment editor frame's close button is poked
+     * no confirmation message is displayed, the editor is made invisible,
+     * and the status returned is CANCEL.
+     */
+    @Test
+    public void testCloseNoMods()
+    {
+        Author          author  = authorFactory.getUniqueAuthor( 5 );
+        List<Comment>   orig    = copyComments( author.getComments() );
+        runDialog( author );
+        
+        WindowEvent event   = 
+            new WindowEvent( commentEditor, WindowEvent.WINDOW_CLOSING );
+        dispatchEvent( commentEditor, event );
+        
+        BiPredicate<Component,Object>   findOptionPanePred  =
+            (c,o) -> c.isVisible() && c instanceof JOptionPane;
+        Component   comp    = TestUtils.getComponent( findOptionPanePred, null );
+        assertNull( comp );
+        assertFalse( commentEditor.isVisible() );
+        assertEquals( CANCEL, dialogStatus );
+        TestUtils.assertCommentsEqual( orig, commentEditor.getComments() );
+    }
+    
+    /**
+     * Delete the first and last comment from a list, then delete one
+     * from anywhere in the middle of the list. Validate the result.
+     */
+    @Test
+    public void testDeleteSome()
+    {
+        int     commentCount    = 10;
+        
+        // Sanity check. We want to delete the first and last comment,
+        // and a comment from the middle, and still have comments left over.
+        // For this strategy, any comment count greater than five 
+        // will suffice.
+        assertTrue( commentCount > 5 );
+        Title           title   = titleFactory.getUniqueTitle( commentCount );
+        List<Comment>   orig    = copyComments( title.getComments() );
+        runDialog( title );
+        
+        // -2: account for first deleted
+        // -3: account for first and last deleted
+        int[]       toDelete    = { 0, commentCount - 2, (commentCount - 3) / 2 };
+        for ( int row : toDelete )
+        {
+            selectCommentAt( row );
+            String      text    = jTextArea.getText();
+            String[]    parts   = text.split( " " );
+            assertTrue( parts.length >= 1 );
+            
+            BiPredicate<Comment,Object> pred    = 
+                (c,o) -> c.getText().startsWith( o.toString() );
+            Comment comment = getComment( orig, parts[0], pred );
+            assertNotNull( comment );
+            
+            orig.remove( comment );
+            deleteCommentAt( row );
+        }
+        
+        List<Comment>   actual  = commentEditor.getComments();
+        TestUtils.assertCommentsEqual( orig, actual );
+    }
+    
+    /**
+     * Delete the first and last comment from a list, then delete one
+     * from anywhere in the middle of the list. Validate the result.
+     */
+    @Test
+    public void testDeleteAll()
+    {
+        int             commentCount    = 5;
+        Title           title           = 
+            titleFactory.getUniqueTitle( commentCount );
+        runDialog( title );
+        
+        while ( jTable.getRowCount() > 0 )
+            deleteCommentAt( 0 );
+        
+        List<Comment>   actual  = commentEditor.getComments();
+        assertTrue( actual.isEmpty() );
+    }
+    
+    /**
      * Click the comment editor's close button, prompting
      * a JOptionPane question dialog to be displayed.
      * Verify that clicking the cancel button in the JOptionPane
-     * does stops the comment editor from being closed.
+     * stops the comment editor from being closed.
      */
     @Test
     public void testCloseCancel()
@@ -309,6 +400,40 @@ class CommentEditorTest
         int unexpectedStatus    = -1;
         dialogStatus = unexpectedStatus;
         testClose( CANCEL_TEXT );
+        assertEquals( unexpectedStatus, dialogStatus );
+        assertTrue( commentEditor.isVisible() );
+    }
+    
+    /**
+     * Click the comment editor's close button, prompting
+     * a JOptionPane question dialog to be displayed.
+     * Verify that clicking the JOptionPane's close button
+     * stops the comment editor from being closed.
+     */
+    @Test
+    public void testCloseClose()
+    {
+        int unexpectedStatus    = -1;
+        Author  author  = authorFactory.getUniqueAuthor( 5 );
+        dialogStatus = unexpectedStatus;
+        runDialog( author );
+        
+        // must make a change to the comment editor in order for the 
+        // question dialog to be displayed; 
+        // then cancel the comment editor.
+        insertComment( "this is a new comment" );
+        
+        // Simulate poking of editor's close button.
+        WindowEvent event   = 
+            new WindowEvent( commentEditor, WindowEvent.WINDOW_CLOSING );
+        dispatchEvent( commentEditor, event );
+        
+        // Simulate poking of question dialog's close button.
+        JDialog     dialog      = getQuestionDialog();
+        Frame       frame       = JOptionPane.getFrameForComponent( dialog );
+        event = new WindowEvent( frame, WindowEvent.WINDOW_CLOSING );
+        dispatchEvent( dialog, event );
+
         assertEquals( unexpectedStatus, dialogStatus );
         assertTrue( commentEditor.isVisible() );
     }
@@ -351,9 +476,7 @@ class CommentEditorTest
         Author  author  = authorFactory.getUniqueAuthor( commentCount );
         
         // Keep copies of the original comments for later validation
-        List<Comment>   exp     = new ArrayList<>();
-        for ( Comment comment : author.getComments() )
-            exp.add( new Comment( comment ) );
+        List<Comment>   exp     = copyComments( author.getComments() );
         runDialog( author );
         
         // Modify a comment in the comment editor;
@@ -367,18 +490,14 @@ class CommentEditorTest
         dispatchEvent( commentEditor, event );
         
         // Find the question dialog that should now be displayed.
-        BiPredicate<Component,Object>   findDialogPred   =
-            (c,o) -> c instanceof JOptionPane;
-        JOptionPane optionPane  = 
-            (JOptionPane)TestUtils.getComponent( findDialogPred, null );
-        assertNotNull( optionPane );
+        JDialog dialog  = getQuestionDialog();
         
         // Bit of logic to shorten the subsequent couple of lines of code
         BiPredicate<Component,Object>   textFinder  = TestUtils.textFinder;
         
         // Find the button in the question dialog that should be clicked
         AbstractButton  targetButton    = (AbstractButton)
-            TestUtils.getComponent( optionPane, textFinder, buttonText );
+            TestUtils.getComponent( dialog, textFinder, buttonText );
         clickButton( targetButton );
         
         // verify that the original comments have NOT been changed (yet)
@@ -410,6 +529,30 @@ class CommentEditorTest
         Thread          thread  = new Thread( runner, "Dialog Runner" );
         thread.start();
         TestUtils.pause( runDialogDelay );
+    }
+    
+    /**
+     * Find the question dialog that is displayed when the operator
+     * selects the comment editor's close button.
+     * An assertion is thrown if the operation fails.
+     * 
+     * @return  the question dialog that is displayed when the operator
+     *          selects the comment editor's close button
+     */
+    private JDialog getQuestionDialog()
+    {
+        BiPredicate<Component,Object>   findOptionPanePred  =
+            (c,o) -> c.isVisible() && c instanceof JOptionPane;
+
+        Component   comp    = TestUtils.getComponent( findOptionPanePred, null );
+        assertNotNull( comp );
+        assertTrue( comp instanceof JOptionPane);
+        
+        JDialog dialog  = TestUtils.getJDialogForComponent( comp, true );
+        assertNotNull( dialog );
+        
+        return dialog;
+        
     }
     
     /**
@@ -504,7 +647,7 @@ class CommentEditorTest
         rowText = tableModel.getValueAt( row, 0 );
         assertEquals( areaText, rowText );
     }
-    
+
     /**
      * Select a given row in the table of comments.
      * Validate the resulting state:
@@ -545,7 +688,9 @@ class CommentEditorTest
         int     startSize   = tableModel.getRowCount();
         int     expSize     = startSize - 1;
         
-        selectionModel.removeIndexInterval( row, row );
+        selectCommentAt( row );
+//        tableModel.removeRow( row );
+        deleteButton.doClick();
         int     actSize     = tableModel.getRowCount();
         assertEquals( expSize, actSize );
         
@@ -602,6 +747,8 @@ class CommentEditorTest
     {
         final int       charUndefined = KeyEvent.CHAR_UNDEFINED;
         final String    err             = "key code not found";
+        if ( keys.equals( " modified" ) )
+            System.out.println( keys );
         for (char c : keys.toCharArray())
         {
             int keyCode = KeyEvent.getExtendedKeyCodeForChar(c);
@@ -609,9 +756,54 @@ class CommentEditorTest
             robot.keyPress(keyCode);
             robot.keyRelease(keyCode);
         }
+        // give GUI thread a chance to settle
+        TestUtils.pause( 100 );
     }
     
-    private class DialogRunner implements Runnable
+    /**
+     * Make duplicates of all comments in a list
+     * and return them in a new list.
+     * 
+     * @param from  list of comments to duplicate
+     * 
+     * @return list of duplicates of the objects from <em>from</em>.
+     */
+    private List<Comment> copyComments( List<Comment> from )
+    {
+        List<Comment>   too = new ArrayList<>();
+        for ( Comment comment : from )
+            too.add( new Comment( comment ) );
+        return too;
+    }
+    
+    /**
+     * Gets a list of comments that begin with a unique, sequential prefix.
+     * The text of each comment begins with <em>"nnn "</em>
+     * where <em>n</em> is a digit between 0 and 9.
+     * 
+     * @param type      the type of the comment (TITLE_TYPE or AUTHOR_TYPE)
+     * @param count     the number of comments to get
+     * 
+     * @return a list of comments that begin with a unique, sequential prefix
+     */
+    private List<Comment> getSequentialComments( int type, int count )
+    {
+        final String    fmt         = "%03d %s";
+        List<Comment>   comments    = new ArrayList<>();
+        for ( int inx = 0 ; inx < count ; ++inx )
+        {
+            Comment comment = commentFactory.getUniqueComment( -1 );
+            comment.setType( type );
+            comment.setItemID( OptionalInt.empty() );
+            String  oldText = comment.getText();
+            String  newText = String.format( fmt, inx, oldText );
+            comment.setText( newText );
+            comments.add( comment );
+        }
+        return comments;
+    }
+    
+    private class DialogRunner implements Runnable, Comparator<Integer>
     {
         private final LibraryItem   item;
         
@@ -623,6 +815,13 @@ class CommentEditorTest
         public void run()
         {
             dialogStatus = commentEditor.showDialog( true, item );
+        }
+
+        @Override
+        public int compare(Integer o1, Integer o2)
+        {
+            // TODO Auto-generated method stub
+            return 0;
         }
     }
 }

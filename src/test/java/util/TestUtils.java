@@ -359,4 +359,28 @@ public class TestUtils
         }
         return comp;
     }
+    
+    public static JDialog 
+    getJDialogForComponent( Component component, boolean mustBeVisible )
+    {
+        JDialog dialog  = null;
+        for ( Window window : Window.getWindows() )
+        {
+            if ( window instanceof JDialog )
+            {
+                JDialog testDialog  = (JDialog)window;
+                if ( mustBeVisible && !testDialog.isVisible() )
+                    continue;
+                Container   container       = testDialog.getContentPane();
+                Component   testComponent   = 
+                    getComponent( container, (c,o) -> c == o, component );
+                if ( testComponent != null )
+                {
+                    dialog = testDialog;
+                    break;
+                }
+            }
+        }
+        return dialog;
+    }
 }

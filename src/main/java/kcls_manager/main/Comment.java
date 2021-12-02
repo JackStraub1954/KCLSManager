@@ -176,6 +176,7 @@ public class Comment implements Comparable<Comment>
         bldr.append( "{" )
             .append( "ident=" ).append( intIdent ).append( "," )
             .append( "text=" ).append( getText() ).append( "," )
+            .append( "itemID=" ).append( getItemID() ).append( "," )
             .append( "type=" ).append( strType )
             .append( "}" );
         return bldr.toString();
@@ -196,6 +197,10 @@ public class Comment implements Comparable<Comment>
     @Override
     public boolean equals( Object obj )
     {
+        if ( obj == null )
+            return false;
+        if ( this == obj )
+            return true;
         if ( !(obj instanceof Comment) )
             return false;
         Comment that    = (Comment)obj;
