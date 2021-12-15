@@ -444,7 +444,7 @@ public class CommentEditor extends JDialog
         @Override
         public void changedUpdate(DocumentEvent e)
         {
-            // this event is never fired by this dialog
+            // not invoked by this application
         }
         
         /**
