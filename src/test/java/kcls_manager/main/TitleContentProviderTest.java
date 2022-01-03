@@ -28,8 +28,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import kcls_manager.database.DBServer;
-import util.TestUtils;
-import util.TitleFactory;
+import test_util.TestUtils;
+import test_util.TitleFactory;
 
 class TitleContentProviderTest
 {

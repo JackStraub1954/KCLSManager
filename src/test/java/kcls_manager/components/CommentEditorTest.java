@@ -56,10 +56,10 @@ import kcls_manager.main.Author;
 import kcls_manager.main.Comment;
 import kcls_manager.main.LibraryItem;
 import kcls_manager.main.Title;
-import util.AuthorFactory;
-import util.CommentFactory;
-import util.TestUtils;
-import util.TitleFactory;
+import test_util.AuthorFactory;
+import test_util.CommentFactory;
+import test_util.TestUtils;
+import test_util.TitleFactory;
 
 class CommentEditorTest
 {

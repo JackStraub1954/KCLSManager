@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import util.TitleFactory;
+import test_util.TitleFactory;
 
 class TitleContentTranslatorTest
 {

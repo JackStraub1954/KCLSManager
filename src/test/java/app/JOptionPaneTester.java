@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import util.TestUtils;
+import test_util.TestUtils;
 
 public class JOptionPaneTester implements Runnable
 {

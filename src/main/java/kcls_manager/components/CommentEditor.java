@@ -535,9 +535,9 @@ public class CommentEditor extends JDialog
         /** Generated serial version UID */
         private static final long serialVersionUID = -7084345663961459127L;
 
-        public LocalTableModel( Object[] comments )
+        public LocalTableModel( Object[] columnNames )
         {
-            super( null, comments );
+            super( null, columnNames );
         }
         
         @Override

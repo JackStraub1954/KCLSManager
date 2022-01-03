@@ -1,6 +1,7 @@
 package app;
 
 import static kcls_manager.database.DBConstants.LISTS_TABLE_NAME;
+import static kcls_manager.database.DBConstants.TITLES_TABLE_NAME;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class DBDumper
 //        DBDumper    dumper  = new DBDumper();
 //        dumper.dbServer.dumpTable( LISTS_TABLE_NAME );
         dbServer.dumpTable( LISTS_TABLE_NAME );
+        dbServer.dumpTable( TITLES_TABLE_NAME );
         
         System.out.println( "***** LISTS TABLE: ");
         List<KCLSList>  lists    = dbServer.getAllLists();

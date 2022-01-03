@@ -1,4 +1,4 @@
-package util;
+package test_util;
 
 import static kcls_manager.database.DBConstants.AUTHORS_TABLE_NAME;
 import static kcls_manager.database.DBConstants.COMMENTS_TABLE_NAME;

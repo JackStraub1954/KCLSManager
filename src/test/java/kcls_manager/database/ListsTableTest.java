@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import kcls_manager.main.KCLSException;
 import kcls_manager.main.KCLSList;
-import util.TestUtils;
+import test_util.TestUtils;
 
 class ListsTableTest
 {

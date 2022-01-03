@@ -28,10 +28,10 @@ import kcls_manager.main.KCLSException;
 import kcls_manager.main.KCLSList;
 import kcls_manager.main.Title;
 import kcls_manager.main.Utils;
-import util.AuthorFactory;
-import util.CommentFactory;
-import util.TestUtils;
-import util.TitleFactory;
+import test_util.AuthorFactory;
+import test_util.CommentFactory;
+import test_util.TestUtils;
+import test_util.TitleFactory;
 
 /**
  * Tester for the CommentsTable class.

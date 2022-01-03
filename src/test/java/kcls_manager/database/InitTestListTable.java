@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import app.InitListTable;
 import kcls_manager.main.KCLSList;
-import util.TestUtils;
+import test_util.TestUtils;
 
 /**
  * Initializes the database LIST table.

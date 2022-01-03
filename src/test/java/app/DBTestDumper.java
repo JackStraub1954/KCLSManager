@@ -7,7 +7,7 @@ import static kcls_manager.database.DBConstants.LISTS_TABLE_NAME;
 import java.util.Arrays;
 
 import kcls_manager.database.DBServer;
-import util.TestUtils;
+import test_util.TestUtils;
 
 public class DBTestDumper
 {

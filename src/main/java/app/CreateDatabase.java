@@ -160,7 +160,8 @@ public class CreateDatabase
 
         try
         {
-            logger.info( connectionPoint );
+            logger.info( "Connecting to: " + connectionPoint );
+//            new org.apache.derby.jdbc.EmbeddedDriver();
             Connection  conn    = 
                 DriverManager.getConnection( connectionPoint, props );
             logger.info( "connection established" );

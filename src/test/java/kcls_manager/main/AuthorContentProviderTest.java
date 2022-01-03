@@ -34,8 +34,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import kcls_manager.database.DBServer;
-import util.AuthorFactory;
-import util.TestUtils;
+import test_util.AuthorFactory;
+import test_util.TestUtils;
 
 class AuthorContentProviderTest
 {

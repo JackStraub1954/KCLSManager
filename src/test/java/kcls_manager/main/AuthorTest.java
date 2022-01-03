@@ -14,8 +14,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import util.AuthorFactory;
-import util.CommentFactory;
+import test_util.AuthorFactory;
+import test_util.CommentFactory;
 
 class AuthorTest
 {
