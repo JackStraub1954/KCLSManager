@@ -1,5 +1,6 @@
 package kcls_manager.main;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -221,5 +222,43 @@ public class Utils
         int     rcode   = compareTo( temp1, temp2 );
 
         return rcode;
+    }
+    
+    /**
+     * Convert an em value to pixels (1em = font size in points).
+     * Font is determined by a given component.
+     * 
+     * @param emm   em value
+     * @param comp  given component
+     * 
+     * @return number of pixels equivalent to the em value
+     * 
+     * @see #cvtEmToPxInt(float, Component)
+     */
+    public static float cvtEmToPx( float emm, Component comp )
+    {
+        float   fontSize    = comp.getFont().getSize2D();
+        float   result      = emm * fontSize;
+        return result;
+    }
+    
+    /**
+     * Convert an em value to pixels (1em = font size in points),
+     * rounding to the nearest integer (half-up).
+     * Font is determined by a given component.
+     * 
+     * @param emm   em value
+     * @param comp  given component
+     * 
+     * @return  number of pixels equivalent to the em value,
+     *          rounded to the nearest integer
+     *          
+     * @see #cvtEmToPx(float, Component)
+     */
+    public static int cvtEmToPxInt( float emm, Component comp )
+    {
+        float   fontSize    = comp.getFont().getSize2D();
+        int     result      = (int)(emm * fontSize);
+        return result;
     }
 }
